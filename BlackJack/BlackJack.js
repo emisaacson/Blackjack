@@ -104,10 +104,12 @@ var BlackJack = function () {
 			var PossibleHandValues = [];
 
 			for (i = 0; i < Hand.length; i++) {
-				CardValue = GetCardValue(Hand[i]);
+				CardValue = this.GetCardValue(Hand[i]);
 				
 				if (PossibleHandValues.length === 0) {
-					PossibleHandValues = CardValue;
+					for (j = 0; j < CardValue.length; j++) {
+						PossibleHandValues.push(CardValue[j]);
+					}
 				}
 				else if (CardValue.length === 1) {
 					for (j = 0; j < PossibleHandValues.length; j++) {
@@ -139,6 +141,8 @@ var BlackJack = function () {
 					throw "Error: Cannot have more than 2 values for a card.";
 				}
 			}
+
+			return PossibleHandValues;
 		},
 		Reset: function () {
 			this.Deck = Deck();
