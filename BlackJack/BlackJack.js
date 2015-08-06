@@ -79,7 +79,20 @@ var Player = function (BJ) {
 
 var BlackJack = function () {
 	var _Deck = Deck();
-	var Moves = [];
+    var Moves = [];
+    
+    var NumericCompare = function (a, b) {
+        var A = parseInt(a, 10);
+        var B = parseInt(b, 10);
+
+        if (A === B) {
+            return 0;
+        }
+        if (A < B) {
+            return -1;
+        }
+        return 1;
+    };
 
 	var BJ = {
 		Deck: _Deck,
@@ -101,17 +114,12 @@ var BlackJack = function () {
 		GetHandValue: function (Hand) {
 			var i, j, tmp, CardValue;
 			
-			var PossibleHandValues = [];
+			var PossibleHandValues = [0];
 
 			for (i = 0; i < Hand.length; i++) {
 				CardValue = this.GetCardValue(Hand[i]);
 				
-				if (PossibleHandValues.length === 0) {
-					for (j = 0; j < CardValue.length; j++) {
-						PossibleHandValues.push(CardValue[j]);
-					}
-				}
-				else if (CardValue.length === 1) {
+				if (CardValue.length === 1) {
 					for (j = 0; j < PossibleHandValues.length; j++) {
 						PossibleHandValues[j] += CardValue[0];
 					}
@@ -119,12 +127,12 @@ var BlackJack = function () {
 				else if (CardValue.length === 2) {
 					tmp = [];
 					for (j = 0; j < PossibleHandValues.length; j++) {
-						PossibleHandValues[j] += CardValue[0];
 						tmp.push(PossibleHandValues[j] + CardValue[1]);
+						PossibleHandValues[j] += CardValue[0];
 					}
 
-					PossibleHandValues.concat(tmp);
-					PossibleHandValues.sort();
+					PossibleHandValues = PossibleHandValues.concat(tmp);
+					PossibleHandValues = PossibleHandValues.sort(NumericCompare);
 					PossibleHandValues = PossibleHandValues.filter(function (Val, Index, Arr) {
 						if (Index === 0) {
 							return true;
@@ -155,13 +163,13 @@ var BlackJack = function () {
 	return BJ;
 };
 
-var Card;
-var MyDeck = Deck();
+//var Card;
+//var MyDeck = Deck();
 
-MyDeck.Shuffle();
-while (Card = MyDeck.Draw()) {
-	console.log(Card);
-}
+//MyDeck.Shuffle();
+//while (Card = MyDeck.Draw()) {
+//	console.log(Card);
+//}
 
 exports.BlackJack = BlackJack;
 exports.Deck = Deck;
