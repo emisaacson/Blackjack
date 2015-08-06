@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "BlackJack",
+  "version": "0.0.0",
+  "description": "BlackJack",
+  "main": "app.js",
+  "author": {
+    "name": "Administrator",
+    "email": ""
+  },
+  "dependencies": {
+    "qunitjs": "^1.18.0"
+  }
+}
