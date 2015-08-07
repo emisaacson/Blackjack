@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>BlackJack</title>
+</head>
+<body>
+    <button role="button" id="begin">Begin</button>
+    <div id="output"></div>
+    <script src="BlackJack.js"></script>
+    <script>
+        (function () {
+            var Start = document.getElementById("begin");
+            Start.addEventListener("click", function () {
+                document.getElementById("output").innerHTML = "";
+
+                var BJ = BlackJack();
+
+                BJ.Logging = true;
+                BJ.Deck.Shuffle();
+                BJ.Log("Beginning first hand.");
+                while (BJ.PlayHand()) {
+                    BJ.Log("Next hand.");
+                }
+                BJ.Log("Game complete.");
+                BJ.Log("Final Score: " + BJ.Player.Score.toString());
+            });
+        }());
+    </script>
+</body>
+</html>

@@ -59,27 +59,58 @@ var Deck = function () {
 	};
 };
 
+var Moves = {
+    Stay: 0,
+    Hit: 1,
+    DoubleDown: 2,
+    Split: 3
+};
+
 var Player = function (BJ) {
 	return {
 		Score: 0,
 		Cards: [],
-		Hit: function () {
-			var Card = BJ.Deck.Draw();
-			Cards.push(Card);
-		},
+        Deal: function (Card) {
+            this.Cards.push(Card);
+        },
 		Clear: function () {
 			this.Cards = [];
 		},
 		Reset: function () {
 			this.Cards = [];
 			this.Score = 0;
-		}
+        },
+        GetStrategy: function (DealerCard) {
+            
+            var DealerValue = BJ.GetCardValue(DealerCard);
+            var MyHand = BJ.GetHandValue(this.Cards);
+            
+            var LegalHands = MyHand.filter(function (c) { return c <= 21; });
+            
+            if (LegalHands.length === 0) {
+                return Moves.Stay;
+            }
+
+            var MyCurrentBest = LegalHands[LegalHands.length - 1];
+            if (MyCurrentBest >= 17) {
+                return Moves.Stay;
+            }
+            if (MyCurrentBest < 12) {
+                return Moves.Hit;
+            }
+            if (MyCurrentBest < DealerValue[DealerValue.length - 1] + 10) {
+                return Moves.Hit;
+            }
+
+            return Moves.Stay;
+        }
 	};
 };
 
 var BlackJack = function () {
-	var _Deck = Deck();
-    var Moves = [];
+    var _Deck = Deck();
+    
+    var IsBrowser = typeof window !== 'undefined';
     
     var NumericCompare = function (a, b) {
         var A = parseInt(a, 10);
@@ -95,9 +126,25 @@ var BlackJack = function () {
     };
 
 	var BJ = {
-		Deck: _Deck,
-		Dealer: Player(BJ),
-		Player: Player(BJ),
+        Deck: _Deck,
+        Logging: false,
+        Log: function (message) {
+            if (this.Logging) {
+                if (IsBrowser) {
+                    var Panel = document.getElementById("output");
+                    var Tmp = document.createElement("div");
+                    Tmp.innerHTML = message;
+                    setTimeout(function () {
+                        Panel.innerHTML += "<p>" + Tmp.innerText + "</p>";
+                    });
+                }
+                else {
+                    console.log(message);
+                }
+            }
+        },
+		Dealer: null,
+		Player: null,
 		GetCardValue: function (Card) {
 			if (['J', 'Q', 'K'].indexOf(Card[0]) !== -1) {
 				return [10];
@@ -110,7 +157,9 @@ var BlackJack = function () {
 			var NumVal = parseInt(StrVal, 10);
 
 			return [NumVal];
-		},
+        },
+        // Get all possible values for the
+        // current hand, including values over 21
 		GetHandValue: function (Hand) {
 			var i, j, tmp, CardValue;
 			
@@ -152,6 +201,128 @@ var BlackJack = function () {
 
 			return PossibleHandValues;
 		},
+        PlayHand: function () {
+            var i, Card, Move, PlayerHand, DealerHand, PlayerLegal, DealerLegal;
+            
+            this.Dealer.Clear();
+            this.Player.Clear();
+
+            // Deal player and dealer 2 cards
+            for (i = 0; i < 2; i++) {
+                Card = this.Deck.Draw();
+                if (Card) {
+                    this.Log("Player got a card: " + Card);
+                    this.Player.Deal(Card);
+                }
+                else {
+                    this.Log("Deck ran out, game over.");
+                    return false;
+                }
+                
+                Card = this.Deck.Draw();
+                if (Card) {
+                    this.Log("Dealer got a card: " + Card);
+                    this.Dealer.Deal(Card);
+                }
+                else {
+                    this.Log("Deck ran out, game over.");
+                    return false;
+                }
+            }
+            
+            // Did dealer blackjack?
+            DealerHand = this.GetHandValue(this.Dealer.Cards);
+            if (DealerHand[DealerHand.length - 1] === 21) {
+                this.Log("Dealer got blackjack, player loses a point.");
+                this.Player.Score -= 1;
+                return true;
+            }
+            
+            // Did player blackjack?
+            PlayerHand = this.GetHandValue(this.Player.Cards);
+            if (PlayerHand[PlayerHand.length - 1] === 21) {
+                this.Log("Player got blackjack, player gets 1.5 points.");
+                this.Player.Score += 1.5;
+                return true;
+            }
+            
+            // Player plays
+            Move = this.Player.GetStrategy(this.Dealer.Cards[0]);
+            while (Move !== Moves.Stay) {
+                switch (Move) {
+                    case Moves.Hit:
+                        this.Log("Player hits.");
+                        Card = this.Deck.Draw();
+                        if (Card) {
+                            this.Log("Player got a card: " + Card);
+                            this.Player.Deal(Card);
+                        }
+                        else {
+                            this.Log("Deck ran out, game over.");
+                            return false;
+                        }
+                        break;
+                    case Moves.DoubleDown:
+                        break;
+                    case Moves.Split:
+                        break;
+                }
+                Move = this.Player.GetStrategy(this.Dealer.Cards[0]);
+            }
+            
+            this.Log("Player stays.");
+            
+            // Did player bust?
+            PlayerHand = this.GetHandValue(this.Player.Cards);
+            if (PlayerHand[0] > 21) {
+                this.Log("Players busts. Loses 1 point.");
+                this.Player.Score -= 1;
+                return true;
+            }
+
+            // Dealer Plays
+            DealerHand = this.GetHandValue(this.Dealer.Cards);
+            // Dealer hits on all 16s and soft 17
+            // TODO: the soft calculation is wrong
+            while (DealerHand[0] < 17 ||
+                  (DealerHand.length > 0 && DealerHand[DealerHand.length - 1] < 18)) {
+                this.Log("Dealer hits.");
+                Card = this.Deck.Draw();
+                if (Card) {
+                    this.Log("Dealer got a card: " + Card);
+                    this.Dealer.Deal(Card);
+                }
+                else {
+                    this.Log("Deck ran out, game over.");
+                    return false;
+                }
+                DealerHand = this.GetHandValue(this.Dealer.Cards);
+            }
+            
+            // Did Dealer bust?
+            if (DealerHand[0] > 21) {
+                this.Log("Dealer busts, player gets a point.");
+                this.Player.Score += 1;
+                return true;
+            }
+
+            // Who has the best legal score?
+            PlayerLegal = PlayerHand.filter(function (c) { return c <= 21; });
+            DealerLegal = DealerHand.filter(function (c) { return c <= 21; });
+
+            if (PlayerLegal[PlayerLegal.length - 1] < DealerLegal[DealerLegal.length - 1]) {
+                this.Log("Dealer beats player, player loses a point.");
+                this.Player.Score -= 1;
+            }
+            else if (DealerLegal[DealerLegal.length - 1] < PlayerLegal[PlayerLegal.length - 1]) {
+                this.Log("Player beats dealer, player gets a point.");
+                this.Player.Score += 1;
+            }
+            else {
+                this.Log("Tie, no change in score.");
+            }
+            return true;
+        },
 		Reset: function () {
 			this.Deck = Deck();
 			this.Player = Player(this);
@@ -159,6 +330,8 @@ var BlackJack = function () {
 			Moves = [];
 		}
 	};
+    BJ.Player = Player(BJ);
+    BJ.Dealer = Player(BJ);
 
 	return BJ;
 };
@@ -171,6 +344,9 @@ var BlackJack = function () {
 //	console.log(Card);
 //}
 
-exports.BlackJack = BlackJack;
-exports.Deck = Deck;
-exports.Player = Player;
+if (typeof window === 'undefined') {
+    exports.BlackJack = BlackJack;
+    exports.Deck = Deck;
+    exports.Player = Player;
+    exports.Moves = Moves;
+}
