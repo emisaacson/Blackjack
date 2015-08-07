@@ -135,6 +135,8 @@ var BlackJack = function () {
                     var Tmp = document.createElement("div");
                     Tmp.innerHTML = message;
                     setTimeout(function () {
+                        var P = document.createElement("p");
+                        P.innerHTML = Tmp.innerText
                         Panel.innerHTML += "<p>" + Tmp.innerText + "</p>";
                     });
                 }
@@ -284,7 +286,7 @@ var BlackJack = function () {
             DealerHand = this.GetHandValue(this.Dealer.Cards);
             // Dealer hits on all 16s and soft 17
             // TODO: the soft calculation is wrong
-            while (DealerHand[0] < 17 ||
+            while ((DealerHand.length === 0 && DealerHand[0] < 17) ||
                   (DealerHand.length > 0 && DealerHand[DealerHand.length - 1] < 18)) {
                 this.Log("Dealer hits.");
                 Card = this.Deck.Draw();
