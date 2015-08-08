@@ -35,6 +35,7 @@
       <SubType>Code</SubType>
       <TestFramework>ExportRunner</TestFramework>
     </Compile>
+    <Content Include="BlackJack.html" />
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
