@@ -544,7 +544,7 @@ var Solver = function () {
 };
 
 
-if (exports !== undefined) {
+if (typeof exports !== 'undefined') {
     exports.BlackJack = BlackJack;
     exports.Deck = Deck;
     exports.Player = Player;
