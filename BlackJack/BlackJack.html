@@ -5,25 +5,132 @@
     <title>BlackJack</title>
 </head>
 <body>
-    <button role="button" id="begin">Begin</button>
+    <button role="button" id="shuffle">Shuffle</button>
+    <button role="button" id="begin">Play Normal</button>
+    <button role="button" id="best">Play Optimal</button>
+    <button role="button" id="bestLog">Play Optimal (show logging)</button>
+    <button role="button" id="winningMoves">Show Optimal Moves</button>
     <div id="output"></div>
     <script src="BlackJack.js"></script>
     <script>
         (function () {
+            var Shuffle = document.getElementById("shuffle");
             var Start = document.getElementById("begin");
+            var Best = document.getElementById("best");
+            var BestLog = document.getElementById("bestLog");
+            var WinningMoves = document.getElementById("winningMoves");
+
+            var PlayerDeck = Deck();
+            PlayerDeck.Shuffle();
+
+            var LoudDeterministicPlayer = function (BJ, DeterministicMoves) {
+                var DPlayer = DeterministicPlayer(BJ, DeterministicMoves);
+                var Output = Player(BJ);
+
+                Output.GetStrategy = function (DealerCard) {
+                    DPlayer.Cards = this.Cards;
+                    var BestMove = DPlayer.GetStrategy(DealerCard);
+                    var Panel = document.getElementById("output");
+                    var P = document.createElement("div");
+
+                    switch (BestMove) {
+                        case Moves.Stay:
+                            if (BJ.GetHandValue(this.Cards)[0] <= 21) {
+                                P.innerHTML = "Stay";
+                                Panel.appendChild(P);
+                            }
+                            break;
+                        case Moves.Hit:
+                            P.innerHTML = "Hit";
+                            Panel.appendChild(P);
+                            break;
+                    }
+
+                    return BestMove;
+                };
+
+                return Output;
+            };
+
+            Shuffle.addEventListener("click", function () {
+                document.getElementById("output").innerHTML = "";
+
+                PlayerDeck.Shuffle();
+            });
+
             Start.addEventListener("click", function () {
                 document.getElementById("output").innerHTML = "";
 
                 var BJ = BlackJack();
 
                 BJ.Logging = true;
-                BJ.Deck.Shuffle();
+                BJ.Deck.Cards = PlayerDeck.Cards.slice();
                 BJ.Log("Beginning first hand.");
                 while (BJ.PlayHand()) {
                     BJ.Log("Next hand.");
                 }
                 BJ.Log("Game complete.");
                 BJ.Log("Final Score: " + BJ.Player.Score.toString());
+            });
+
+            Best.addEventListener("click", function () {
+                document.getElementById("output").innerHTML = "";
+
+                var Solve = Solver();
+
+                Solve.Logging = false;
+                var Optimum = Solve.Solve([], [], null, PlayerDeck.Cards.slice(), PlayerDeck.Cards.length, "-");
+                
+                var BJ = BlackJack();
+
+                BJ.Logging = true;
+                BJ.Deck.Cards = PlayerDeck.Cards.slice();
+                BJ.Player = DeterministicPlayer(BJ, Solve.Parent);
+                BJ.Log("Beginning first hand.");
+                while (BJ.PlayHand()) {
+                    BJ.Log("Next hand.");
+                }
+                BJ.Log("Game complete.");
+                BJ.Log("Final score: " + BJ.Player.Score.toString());
+
+                if (BJ.Player.Score !== Optimum) {
+                    alert("Optimum value does not equal the check. Optimum: " + Optimum +
+                          " Check: " + BJ.Player.Score);
+                }
+            });
+
+            BestLog.addEventListener("click", function () {
+                document.getElementById("output").innerHTML = "";
+
+                var Solve = Solver();
+
+                Solve.Logging = true;
+                Solve.Log("Playing all games (smartly - with dynamic programming and memoization) to find the best.");
+                var Optimum = Solve.Solve([], [], null, PlayerDeck.Cards.slice(), PlayerDeck.Cards.length, "-");
+
+                Solve.Log("All games complete.");
+                Solve.Log("Final score: " + Optimum.toString());
+            });
+
+            WinningMoves.addEventListener("click", function () {
+                document.getElementById("output").innerHTML = "";
+
+                var Solve = Solver();
+
+                Solve.Logging = false;
+                var Optimum = Solve.Solve([], [], null, PlayerDeck.Cards.slice(), PlayerDeck.Cards.length, "-");
+                
+                var BJ = BlackJack();
+
+                BJ.Logging = false;
+                BJ.Deck.Cards = PlayerDeck.Cards.slice();
+                BJ.Player = LoudDeterministicPlayer(BJ, Solve.Parent);
+                while (BJ.PlayHand()) { }
+
+                if (BJ.Player.Score !== Optimum) {
+                    alert("Optimum value does not equal the check. Optimum: " + Optimum +
+                          " Check: " + BJ.Player.Score);
+                }
             });
         }());
     </script>
