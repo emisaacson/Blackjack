@@ -145,8 +145,8 @@ var BlackJack = function () {
                 if (IsBrowser) {
                     var Panel = document.getElementById("output");
                     var P = document.createElement("div");
-                    if (P.hasOwnProperty("innerContent")) {
-                        P.innerContent = message;
+                    if (P.textContent !== undefined) {
+                        P.textContent = message;
                     }
                     else {
                         P.innerText = message;
@@ -543,15 +543,8 @@ var Solver = function () {
     return BJ;
 };
 
-//var Card;
-//var MyDeck = Deck();
 
-//MyDeck.Shuffle();
-//while (Card = MyDeck.Draw()) {
-//	console.log(Card);
-//}
-
-if (typeof exports !== 'undefined') {
+if (exports !== undefined) {
     exports.BlackJack = BlackJack;
     exports.Deck = Deck;
     exports.Player = Player;
