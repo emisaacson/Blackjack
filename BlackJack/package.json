@@ -3,12 +3,11 @@
   "name": "BlackJack",
   "version": "0.0.0",
   "description": "BlackJack",
-  "main": "app.js",
+  "main": "BlackJack.js",
   "author": {
-    "name": "Administrator",
+    "name": "emisaacson",
     "email": ""
   },
   "dependencies": {
-    "qunitjs": "^1.18.0"
   }
 }
