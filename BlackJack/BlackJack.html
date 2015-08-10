@@ -6,15 +6,17 @@
 </head>
 <body>
     <button role="button" id="shuffle">Shuffle</button>
+    <button role="button" id="showDeck">Show Deck</button>
     <button role="button" id="begin">Play Normal</button>
     <button role="button" id="best">Play Optimal</button>
-    <button role="button" id="bestLog">Play Optimal (show logging)</button>
+    <button role="button" id="bestLog">Discover Optimal (show logging)</button>
     <button role="button" id="winningMoves">Show Optimal Moves</button>
     <div id="output"></div>
     <script src="BlackJack.js"></script>
     <script>
         (function () {
             var Shuffle = document.getElementById("shuffle");
+            var ShowDeck = document.getElementById("showDeck");
             var Start = document.getElementById("begin");
             var Best = document.getElementById("best");
             var BestLog = document.getElementById("bestLog");
@@ -56,6 +58,23 @@
                 document.getElementById("output").innerHTML = "";
 
                 PlayerDeck.Shuffle();
+            });
+
+            ShowDeck.addEventListener("click", function () {
+                var Output = [], Card, Cards = PlayerDeck.Cards.slice().reverse();
+
+                for (var i = 0; i < Cards.length; i++) {
+                    Card = Cards[i];
+
+                    if (['♥', '♦'].indexOf(Card[Card.length - 1]) !== -1) {
+                        Output.push("<span style='color: red;'>"+Card+"</span>");
+                    }
+                    else {
+                        Output.push(Card);
+                    }
+                }
+
+                document.getElementById("output").innerHTML = Output.join(" &nbsp; ");
             });
 
             Start.addEventListener("click", function () {
