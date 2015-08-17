@@ -2,6 +2,8 @@
 
 Blackjack solver in Javascript.
 
+[Working demo](http://www.emikek.com/blackjack)
+
 Works in Node.js or a browser, comes with HTML page and minimal test suite.
 
 Plays any deck (or multiple decks) with "normal" (by the book) strategy, or solves the deck optimally using dynamic programming.
